@@ -1,21 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Score Checker</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nilai Siswa</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500&display=swap" rel="stylesheet">
+  <style>
+    * {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Fredoka', sans-serif;
+  background: linear-gradient(135deg, rgba(194,233,251,0.8), rgba(255,214,255,0.8), rgba(255,250,205,0.8));
+  margin: 0;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+}
+
+a {
+  text-decoration: none;
+}
+
+h1 {
+  color: #6c5ce7;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  margin-bottom: 1.5rem;
+  text-shadow: 1px 1px 0 white;
+  text-align: center;
+}
+
+.search-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  width: 100%;
+  max-width: 25rem;
+  padding: 0 1rem;
+}
+
+input[type="text"] {
+  padding: 0.8rem 1rem;
+  width: 100%;
+  border-radius: 1.5rem;
+  border: none;
+  font-size: clamp(1rem, 4vw, 1.2rem);
+  text-align: center;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  outline: none;
+  background: rgba(255, 255, 255, 0.7);
+  margin-bottom: 1rem;
+}
+
+input[type="text"]:focus {
+  box-shadow: 0 0 0 2px #6c5ce7;
+}
+
+button {
+  background: #6c5ce7;
+  color: white;
+  padding: 0.75rem 2rem;
+  border: none;
+  border-radius: 1.5rem;
+  font-size: clamp(0.9rem, 3.5vw, 1rem);
+  cursor: pointer;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+button:hover {
+  background: #5a4ed4;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+.autocomplete-list {
+  position: absolute;
+  top: 3.5rem;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1rem;
+  box-shadow: 0 0.25rem 0.75rem rgba(0,0,0,0.1);
+  z-index: 10;
+  max-height: 12rem;
+  overflow-y: auto;
+}
+
+.autocomplete-item {
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  font-size: clamp(0.9rem, 3.5vw, 1rem);
+  transition: background 0.2s ease;
+}
+
+.autocomplete-item:hover {
+  background: #f0f0f0;
+}
+
+.container {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 5rem;
+  padding: 0 1rem;
+}
+
+.student-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 1.25rem;
+  padding: 1rem;
+  box-shadow: 0 0.5rem 1.5rem rgba(0,0,0,0.15);
+  width: 100%;
+  max-width: 18rem; /* Original size */
+  aspect-ratio: 1/1; /* Maintain 1:1 aspect ratio */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem; /* Proper spacing */
+  position: relative;
+  overflow: hidden;
+  animation: slideIn 0.5s ease-out;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.student-card:hover {
+  transform: translateY(-0.3rem);
+  box-shadow: 0 0.7rem 2rem rgba(0,0,0,0.2);
+}
+
+.student-card::before {
+  content: '🎓';
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  font-size: 2rem;
+  opacity: 0.2;
+}
+
+.score {
+  font-size: clamp(6.6rem, 24vw, 8.4rem); /* 3x larger */
+  font-weight: bold;
+  color: #ffffff;
+  background: #6c5ce7; /* Default fallback */
+  padding: 0.6rem 1.4rem;
+  border-radius: 1.2rem;
+  box-shadow: 0 0.3rem 0.8rem rgba(0,0,0,0.3);
+  text-align: center;
+  line-height: 1;
+  animation: pulse 2s ease-in-out infinite; /* Existing pulse animation */
+}
+
+.score.gold {
+  background: #FFD700; /* Gold for scores 85-100 */
+  color: #333; /* Darker text for contrast */
+  animation: pulse 2s ease-in-out infinite, goldGlow 2.5s ease-in-out infinite; /* Add glow animation */
+}
+
+.score.blue {
+  background: #007BFF; /* Blue for scores 78-84 */
+}
+
+.score.red {
+  background: #DC3545; /* Red for scores < 78 */
+}
+
+.name {
+  font-size: clamp(0.8rem, 3vw, 0.9rem);
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+  text-align: center;
+  max-width: 90%;
+  word-wrap: break-word;
+}
+
+.loader {
+  width: 50%;
+  max-width: 15rem;
+  height: 1.4rem;
+  border-radius: 1rem;
+  color: #6c5ce7;
+  border: 2px solid;
+  position: relative;
+}
+
+.loader::before {
+  content: "";
+  position: absolute;
+  margin: 2px;
+  inset: 0 100% 0 0;
+  border-radius: inherit;
+  background: currentColor;
+  animation: l6 2s infinite;
+}
+
+@keyframes l6 {
+  100% { inset: 0 }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(1rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes goldGlow {
+  0%, 100% {
+    box-shadow: 0 0.3rem 0.8rem rgba(0,0,0,0.3), 0 0 0.5rem rgba(255,215,0,0.4);
+  }
+  50% {
+    box-shadow: 0 0.3rem 0.8rem rgba(0,0,0,0.3), 0 0 1.2rem rgba(255,215,0,0.8);
+  }
+}
+
+footer {
+  text-align: center;
+  padding: 1.5rem 0;
+  margin-top: 3rem;
+}
+
+footer p {
+  margin-bottom: 0.6rem;
+  font-size: clamp(0.9rem, 3.5vw, 1rem);
+}
+
+footer div {
+  font-size: clamp(1.2rem, 4vw, 1.5rem);
+}
+
+footer a {
+  margin: 0 0.8rem;
+  transition: color 0.2s ease;
+}
+
+/* Media Queries for Additional Responsiveness */
+@media (max-width: 600px) {
+  body {
+    padding: 0.5rem;
+  }
+
+  h1 {
+    font-size: clamp(1.5rem, 6vw, 2rem);
+  }
+
+  .search-container {
+    max-width: 100%;
+  }
+
+  input[type="text"] {
+    padding: 0.7rem;
+    font-size: clamp(0.9rem, 4.5vw, 1.1rem);
+  }
+
+  button {
+    padding: 0.6rem 1.5rem;
+    font-size: clamp(0.85rem, 4vw, 0.95rem);
+  }
+
+  .student-card {
+    padding: 0.8rem;
+    max-width: 15rem; /* Original mobile size */
+  }
+
+  .score {
+    font-size: clamp(5.4rem, 21vw, 7.2rem); /* 3x larger for mobile */
+    padding: 0.5rem 1.2rem;
+    border-radius: 1rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .score.gold {
+    animation: pulse 2s ease-in-out infinite, goldGlow 2.5s ease-in-out infinite;
+  }
+
+  .name {
+    font-size: clamp(0.7rem, 3.2vw, 0.85rem);
+  }
+
+  footer {
+    padding: 1rem 0;
+  }
+
+  footer div {
+    font-size: clamp(1rem, 4vw, 1.3rem);
+  }
+}
+
+@media (min-width: 1200px) {
+  h1 {
+    font-size: clamp(2.2rem, 4vw, 3rem);
+  }
+
+  .search-container {
+    max-width: 30rem;
+  }
+
+  input[type="text"] {
+    font-size: clamp(1.1rem, 2vw, 1.3rem);
+  }
+
+  button {
+    font-size: clamp(1rem, 1.5vw, 1.1rem);
+  }
+
+  .student-card {
+    max-width: 20rem; /* Original desktop size */
+  }
+
+  .score {
+    font-size: clamp(7.2rem, 15vw, 9rem); /* 3x larger for desktop */
+    padding: 0.8rem 1.6rem;
+    border-radius: 1.4rem;
+    animation: pulse 2s ease-in-out infinite;
+  }
+
+  .score.gold {
+    animation: pulse 2s ease-in-out infinite, goldGlow 2.5s ease-in-out infinite;
+  }
+
+  .name {
+    font-size: clamp(0.85rem, 1.5vw, 1rem);
+  }
+}
+  </style>
 </head>
 <body>
-  <h1>Student Score Checker</h1>
+  <h1>🔍 Temukan Nilaimu di Sini!</h1>
+
   <div class="search-container">
-    <input type="text" placeholder="Enter student name">
-    <button>Check Score</button>
-    <div class="autocomplete-list"></div>
+    <input type="text" id="search" placeholder="Ketik nama lengkap kamu...">
+    <button onclick="handleCheck()">Check</button>
+    <div id="autocomplete" class="autocomplete-list"></div>
   </div>
-  <div class="container"></div>
+
+  <div class="container" id="student-list"></div>
+
   <footer style="text-align:center; padding: 20px 0; margin-top: 50px;">
   <p style="margin-bottom: 10px;">Follow Me on:</p>
   <div style="font-size: 24px;">
@@ -30,6 +372,252 @@
     </a>
   </div>
 </footer>
-  <script src="script.js"></script>
+
+  
+  <script>
+    const students = [
+  { score: 92, name: "A.IKMALUDIN ARSAFI" },
+  { score: 100, name: "ACHMAD IZZUL RIYKI DAFFA SAPUTRA" },
+  { score: 91, name: "ADINDA DWI PUTRI WULANDARI" },
+  { score: 48, name: "ADITYA PRANATA" },
+  { score: 97, name: "ADITYA PURNAMA" },
+  { score: 91, name: "AFIEF MUSABBIH" },
+  { score: 91, name: "AGUNG AYATULLOH" },
+  { score: 92, name: "AHDA SABILA" },
+  { score: 23, name: "AHMAD ALDI PRAYUGA" },
+  { score: 100, name: "AHMAD ALIEF FURQONI" },
+  { score: 33, name: "AHMAD BAGUS SETIAWAN" },
+  { score: 85, name: "AHMAD NAVIAN BARZAHIM" },
+  { score: 87, name: "AHMAD RADITIA RAMDHAN" },
+  { score: 48, name: "AHMAD RISKIY SULAIMAN" },
+  { score: 95, name: "AHMAD SYARIF HIDAYATULLAH MUBARAK" },
+  { score: 79, name: "AHMAD VINO SETYIAWAN" },
+  { score: 100, name: "AHNAF RIHHADATUL AISY" },
+  { score: 91, name: "AISAH" },
+  { score: 67, name: "ALAN EMILIO" },
+  { score: 100, name: "ALDIANO REHAN BINASTIAR" },
+  { score: 74, name: "ALIFYA LAILATUL FITRI" },
+  { score: 91, name: "ALIF HIDAYATULLAH" },
+  { score: 91, name: "ALIVIA AGUSTINA" },
+  { score: 67, name: "AMELIA PUTRI" },
+  { score: 48, name: "AMELIYA RAHMA DARYANTI" },
+  { score: 88, name: "AMELIA INDAH LESTARI" },
+  { score: 16, name: "ANDIKA H" },
+  { score: 90, name: "ANGGUN AURA KASIH" },
+  { score: 94, name: "ANIDA FITRI RAHMADANI" },
+  { score: 85, name: "ANISA YAMIL RAHAYU" },
+  { score: 51, name: "ARDI PUTRA SETIAWAN" },
+  { score: 78, name: "ARDINA NATHA SAPUTRI" },
+  { score: 97, name: "ARIL PRATAMA" },
+  { score: 97, name: "ASIFA ARTIKA PUTRI" },
+  { score: 98, name: "ASHRAF MAULANA" },
+  { score: 97, name: "AULIA RAMADHANI" },
+  { score: 78, name: "AURA BUNGA OCTALIVIANA" },
+  { score: 92, name: "AURELIA CALISTA MAYZAH" },
+  { score: 86, name: "AUDREY ANGELINA SETIYAWAN" },
+  { score: 78, name: "AZIFATUL AISYAH" },
+  { score: 68, name: "AZUNI SUKMA" },
+  { score: 91, name: "BAYU LESMANA JATI" },
+  { score: 90, name: "BENONY PYTER" },
+  { score: 84, name: "BINTI JAMIATIN" },
+  { score: 82, name: "BUNGA NUR SITI AMINAH" },
+  { score: 68, name: "CAMELIYA KASI" },
+  { score: 83, name: "CINDY HANIFAH MAHARANI" },
+  { score: 94, name: "CINDY NUR MULYASARI" },
+  { score: 100, name: "DANHISA SAFA OKTAVIANA PUTRI" },
+  { score: 91, name: "DELSAN DIYO YUDHA SYAHWAL" },
+  { score: 78, name: "DIAN ADYKA NINING PRATIWI" },
+  { score: 84, name: "DIENDA EILLEN CHRAIZIENTY" },
+  { score: 65, name: "DINO ANJARSARI" },
+  { score: 94, name: "DINDA FIRDANIA" },
+  { score: 92, name: "DWI RAHAYU AGUSTIN" },
+  { score: 76, name: "EKA RAHMA SALSABILA VEROSA" },
+  { score: 78, name: "ERICKA NOR FADILLA" },
+  { score: 97, name: "ERFIN EGIANSYAH" },
+  { score: 95, name: "ERIK ARIEL PRATAMA" },
+  { score: 94, name: "ERVINA ANJAR SUSANTI" },
+  { score: 66, name: "EVAN BAHTIAR AKBAR" },
+  { score: 94, name: "EVI NUR KHASANAH" },
+  { score: 93, name: "FAISAL AVAN ZAMRI" },
+  { score: 94, name: "FANDY WINANDI" },
+  { score: 71, name: "FEBRI WAHYU ULYANTO" },
+  { score: 94, name: "FEBY SINTA DWI PIRANTI" },
+  { score: 70, name: "FITRI TRINITA MAHARANI" },
+  { score: 97, name: "GALANG PUTRA FIRMANSYAH" },
+  { score: 100, name: "HENDRO SUGIANTORO" },
+  { score: 93, name: "HESSA SALMA MAULANA AZZAHRAH" },
+  { score: 59, name: "HOHONG SAPUTRO" },
+  { score: 77, name: "HOJANG RIBOWO" },
+  { score: 94, name: "IBRAALVAREZA ALIAZZAQI" },
+  { score: 78, name: "ICHA DWI ANGGRAENI" },
+  { score: 81, name: "IKHWAN MEY ISNAINI" },
+  { score: 89, name: "ILMIRA NUR AINU" },
+  { score: 92, name: "ILMIYAH NUR AISYAN" },
+  { score: 81, name: "IMELDA PUTRI MARGARETHA" },
+  { score: 97, name: "IMRO'ATUS SHOLIKHA" },
+  { score: 84, name: "JESIKA ALYA RAMADHANI" },
+  { score: 94, name: "JIHAN IKA PRATIWI" },
+  { score: 95, name: "JUNICO CAESYARIFAH ANASTASYA PUTRI" },
+  { score: 95, name: "LAKEISHA ADIBA OKTAVIANI" },
+  { score: 91, name: "LAILATUL ISTIKOMAH" },
+  { score: 74, name: "LINTANG DWI ALIANTI" },
+  { score: 95, name: "LUQYANA AL KHALWAH" },
+  { score: 100, name: "LUTFI KHOIRUL UMAM" },
+  { score: 95, name: "M IKHSAN PUTRA" },
+  { score: 76, name: "M.ALIF PUTRA" },
+  { score: 80, name: "M.FAJRIEL ADITYA RAMADHANI" },
+  { score: 94, name: "M.IRWAN FIRMANSYAH" },
+  { score: 92, name: "M.IRFANSYAH" },
+  { score: 95, name: "M.LUKMANUL KHAKIM" },
+  { score: 100, name: "M NAZRIL ARYA BIMA" },
+  { score: 51, name: "M.NAZRIL ANDRIANSYAH" },
+  { score: 77, name: "M.NAFIK UDIN" },
+  { score: 97, name: "M.NIZAR ZULMI" },
+  { score: 100, name: "M. RIDWAN ALFIANTO" },
+  { score: 80, name: "M. RIZKI" },
+  { score: 95, name: "MANDA RISKA AMALIA" },
+  { score: 98, name: "MAULANA YUSUF IBRAHIM" },
+  { score: 70, name: "MEI SINTA NUR AMALIA" },
+  { score: 75, name: "MELINDA AULIA" },
+  { score: 81, name: "MELINDA RAHMA WATI" },
+  { score: 86, name: "MELIZA RAHMA WATI" },
+  { score: 84, name: "MERLYNDA RACHMA AYSAH" },
+  { score: 27, name: "METHACARAITAQINNARAH" },
+  { score: 100, name: "MIRZA MAHIROH" },
+  { score: 94, name: "MIRZA NINDYANA" },
+  { score: 98, name: "MOCH FAUZAN ADZIBUROHMAN" },
+  { score: 86, name: "MOHAMMAD RIDHO SPUTRA" },
+  { score: 94, name: "MOHAMMAD RANGGA DIMAS ALDIANO" },
+  { score: 99, name: "MUHAMMAD AFKOHANI YAKINUL PUTRA" },
+  { score: 94, name: "MUHAMMAD ARIEL ARIAWAN" },
+  { score: 90, name: "MUHAMMAD BAGUS HERMAWAN" },
+  { score: 86, name: "MUHAMMAD DIMAS RAMADHANI" },
+  { score: 94, name: "MUHAMMAD FIRDAUS ALKHADAFI" },
+  { score: 88, name: "MUHAMMAD FIRLI FIRMANSYAH" },
+  { score: 92, name: "MUHAMMAD FIRMAN NURISMA" },
+  { score: 91, name: "MUHAMMAD IRSYAD ALBAIHAQI APLAH" },
+  { score: 92, name: "MUHAMMAD JOEVAN AULIA ASHAR" },
+  { score: 100, name: "MUHAMMAD RAMADHONI" },
+  { score: 92, name: "MUHAMMAD RANGGA MAHYADI" },
+  { score: 74, name: "MUHAMMAD RASYA MARVIANTO" },
+  { score: 88, name: "MUHAMMAD REIHAN HANIF" },
+  { score: 86, name:  "MUHAMMAD RESA SAPUTRA" },
+  { score: 85, name: "MUHAMMAD RISKI RAMADANI" },
+  { score: 90, name: "MUHAMMAD SHOFFAN KHOIRUN JAZZA" },
+  { score: 94, name: "MUHAMMAD THORIQ ALHANIF" },
+  { score: 98, name: "MUHAMMAD VIAN EZAR PRAYOGA" },
+  { score: 76, name: "NADIRA SILVIYANDA" },
+  { score: 83, name: "NABILA DWI AYUNI" },
+  { score: 62, name: "NABILA AZZAHRA PUTRI" },
+  { score: 30, name: "NAFISA ELFIANA ANGGRAENI" },
+  { score: 86, name: "NAJWA NADZIDATUL MAULIDYA" },
+  { score: 81, name: "NATZWA AMELIA PUTRI" },
+  { score: 93, name: "NAURA RIHADATUL AISY" },
+  { score: 49, name: "NESHA ANANTASHA" },
+  { score: 89, name: "NIJARUL HAMDI" },
+  { score: 92, name: "NOVA KHARISUNNISA" },
+  { score: 72, name: "NUR FATIMAH FAIQOH" },
+  { score: 84, name: "NUR KHOLIFATUS SA'DIYAH" },
+  { score: 82, name: "NURNA LATHIFAH" },
+  { score: 100, name: "ORYZA SATIVA LIPALESTINE" },
+  { score: 60, name: "PUTRI AMELIA SARI" },
+  { score: 62, name: "RACHMA WARDANI" },
+  { score: 84, name: "RAHMA APRILIANA" },
+  { score: 90, name: "RAIHAN PERMANA PUTRA" },
+  { score: 74, name: "RAKA INDRA ARIYANTO" },
+  { score: 97, name: "RANO KARNO" },
+  { score: 92, name: "RASTY RAHMAWATI KHOIRIYAH" },
+  { score: 97, name: "RAYA LINTANG FAZAE" },
+  { score: 77, name: "RENY AYU ALESYA" },
+  { score: 89, name: "RESITA ZULFA FITRIA ANDINI" },
+  { score: 86, name: "REVAN ARIYA VALEN ARDIANSYAH" },
+  { score: 53, name: "REVA NUR AZMI" },
+  { score: 90, name: "REZA AKBAR MAULANA" },
+  { score: 26, name: "REZANI ADIT SETIAWAN" },
+  { score: 97, name: "RICALDO CANNAFARO" },
+  { score: 20, name: "RINA YHULIA RAHMA" },
+  { score: 93, name: "RISMA NADILYA FEBRIANI" },
+  { score: 95, name: "RISKI TEGUH WIBOWO" },
+  { score: 85, name: "RIZKI OCTAVIANO" },
+  { score: 64, name: "RIZA UMAMI" },
+  { score: 86, name: "ROHMAT RISKI SUGIARTO" },
+  { score: 56, name: "ROUDOTUL JANNAH A.K" },
+  { score: 82, name: "SALMA ZANUARA HAYATUN NUFUS" },
+  { score: 79, name: "SALWA DWI NAILATUL IZZAH" },
+  { score: 92, name: "SALWA SALSABILATUN NAJWA" },
+  { score: 61, name: "SALSABILA RISKY DIYAUL AULIYA" },
+  { score: 91, name: "SEKAR ARUM AYU NING TYAS" },
+  { score: 61, name: "SHERLY AMELIA" },
+  { score: 94, name: "SINDI AGUSTINA RAMADHANI" },
+  { score: 92, name: "SINDI SEPTIANA SARI" },
+  { score: 94, name: "SUCIONO NURJANAH" },
+  { score: 91, name: "SULICH RASYA APRILLIYANTO" },
+  { score: 49, name: "SYARIFATUS SILVIA" },
+  { score: 85, name: "TSALTSABILAH TRIANDITA" },
+  { score: 75, name: "ULFA SHOFIATUL AULIYAH" },
+  { score: 63, name: "VIRRANY MEY NANDA AJENG KHUMAIRA" },
+  { score: 90, name: "WAHYU IRSYADUL IBAD" },
+  { score: 92, name: "WAHYU PUTRI CAHYANI" },
+  { score: 89, name: "WINDA AINUN ROSSA" },
+  { score: 68, name: "ZAHROTUL AINIA" },
+  { score: 94, name: "ZANUAR SATRIA WINATA" },
+  { score: 87, name: "ZIFANA FEBRI WAHYU FIRDAUS" },
+  { score: 50, name: "ZUNIA IRMAWATI" },
+  { score: 92, name: "ZUSI SALSABIILA" }
+];
+
+    const searchInput = document.getElementById('search');
+    const studentList = document.getElementById('student-list');
+    const autocomplete = document.getElementById('autocomplete');
+
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.toUpperCase().trim();
+      autocomplete.innerHTML = '';
+      if (query.length < 2) return;
+
+      const matches = students.filter(s => s.name.includes(query));
+      matches.forEach(student => {
+        const item = document.createElement('div');
+        item.className = 'autocomplete-item';
+        item.textContent = student.name;
+        item.onclick = () => {
+          searchInput.value = student.name;
+          autocomplete.innerHTML = '';
+        };
+        autocomplete.appendChild(item);
+      });
+    });
+
+    function handleCheck() {
+  const query = searchInput.value.toUpperCase().trim();
+  const student = students.find(s => s.name === query);
+  studentList.innerHTML = '';
+
+  const loading = document.createElement('div');
+  loading.className = 'loader';
+  studentList.appendChild(loading);
+
+  setTimeout(() => {
+    studentList.innerHTML = '';
+    if (student) {
+      let scoreClass = 'red'; // Default for scores < 78
+      if (student.score >= 85) scoreClass = 'gold'; // Scores 85-100
+      else if (student.score >= 78) scoreClass = 'blue'; // Scores 78-84
+
+      studentList.innerHTML = `
+        <div class="student-card">
+          <span class="score ${scoreClass}">${student.score}</span>
+          <span class="name">${student.name}</span>
+        </div>
+      `;
+      searchInput.value = ""; // Clear the textbox
+    } else {
+      studentList.innerHTML = `<p style="text-align:center; color:#444;">Nama tidak ditemukan.</p>`;
+      searchInput.value = ""; // Clear the textbox even if no student is found
+    }
+  }, 1500);
+}
+</script>
+  
 </body>
 </html>
