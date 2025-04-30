@@ -2,8 +2,8 @@
 let students = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Fetch student data from students.json
-  fetch('students.json')
+  // Fetch student data from GitHub
+  fetch('https://raw.githubusercontent.com/<your-username>/<repository-name>/main/students.json')
     .then(response => {
       if (!response.ok) {
         throw new Error('Failed to load student data');
